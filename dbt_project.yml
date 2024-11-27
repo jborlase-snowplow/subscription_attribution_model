@@ -1,0 +1,82 @@
+
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: 'subscription_attribution_model'
+version: '1.0.0'
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'jb_dbt_bigquery'
+
+# These configurations specify where dbt should look for different types of files.
+# The `model-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+models:
+  subscription_attribution_model:
+    subscriptions:
+      schema: 'derived'
+    subscription_events_this_run:
+      schema: 'scratch'
+    model_overrides:
+      +schema: 'derived'
+  snowplow_attribution:
+    optional_reporting:
+      +enabled: false
+    snowplow_attribution_campaign_attributions:
+      enabled: false
+    snowplow_attribution_channel_attributions:
+      enabled: false
+
+
+vars:
+  snowplow_unified:
+    snowplow__atomic_schema: 'dbt_jborlase_test'
+    snowplow__events_table: 'events'
+    snowplow__start_date: '2024-11-15'
+
+    snowplow__enable_conversions: true
+    snowplow__conversion_passthroughs: []
+    snowplow__enable_mobile: false
+
+    snowplow__conversion_events: [
+      {
+        "condition": "event_name = 'subscription_event_test' and unstruct_event_com_snplow_eng_aws_subscription_event_test_1.event_type = 'free_trial'",
+        "name": "free_trial",
+        "value": "unstruct_event_com_snplow_eng_aws_subscription_event_test_1.price"
+      },
+      {
+        "condition": "event_name = 'subscription_event_test' and unstruct_event_com_snplow_eng_aws_subscription_event_test_1.event_type = 'subscribe'",
+        "name": "subscribe",
+        "value": "unstruct_event_com_snplow_eng_aws_subscription_event_test_1.price"
+      },
+      {
+        "condition": "event_name = 'subscription_event_test' and unstruct_event_com_snplow_eng_aws_subscription_event_test_1.event_type = 'renew'",
+        "name": "renew",
+        "value": "unstruct_event_com_snplow_eng_aws_subscription_event_test_1.price"
+      }]
+    snowplow__conversion_passthroughs: [{'sql':'unstruct_event_com_snplow_eng_aws_subscription_event_test_1.subscription_id','alias':'subscription_id'}]
+
+  snowplow__attribution_start_date: '2024-11-15'
+  snowplow__user_mapping_source: "{{ ref('snowplow_unified_user_mapping') }}"
+  snowplow__conversion_path_source: "{{ ref('snowplow_unified_views') }}"
+  snowplow__conversions_source: "{{ ref('snowplow_unified_conversions') }}"
+  snowplow__enable_paths_to_non_conversion: false
+  snowplow__conversion_clause: 'ev.user_identifier is not null'
+  snowplow__path_lookback_days: 30
+  snowplow__allow_refresh: true
+  snowplow__dev_target_name: 'dev'
+  snowplow__lookback_window_hours: 6
+
+  snowplow__subscription_events: ['free_trial', 'subscribe', 'renew']
+ 
