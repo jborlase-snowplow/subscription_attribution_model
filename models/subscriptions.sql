@@ -37,17 +37,17 @@ with first_subscription_event AS (
 select
     ev.subscription_id,
 
-    max(ev.cv_tstamp) as last_subscription_event_tstamp,
+    max(ev.cv_tstamp) as last_subscription_event_tstamp
 
     {% for event in var('snowplow__subscription_events') %}
-    count(distinct case when ev.cv_type = '{{ event }}' then ev.cv_id end) as {{ event }}_count,
+      ,count(distinct case when ev.cv_type = '{{ event }}' then ev.cv_id end) as {{ event }}_count
     {% endfor %}
 
     {% for event in var('snowplow__subscription_events') %}
-    sum(case when ev.cv_type = '{{ event }}' then ev.cv_value else 0 end) as {{ event }}_revenue,
+      ,sum(case when ev.cv_type = '{{ event }}' then ev.cv_value else 0 end) as {{ event }}_revenue
     {% endfor %}
 
-    sum(ev.cv_value) as revenue
+    ,sum(ev.cv_value) as revenue
 
 from {{ ref('subscription_events_this_run' )}} as ev
 
@@ -55,25 +55,25 @@ from {{ ref('subscription_events_this_run' )}} as ev
 )
 
 select
-  first_subscription_event.subscription_id,
-  first_subscription_event.user_identifier,
-  first_subscription_event.user_id,
-  first_subscription_event.stitched_user_id,
-  first_subscription_event.cv_tstamp as subscription_start_tstamp,
-  subscription_events_aggregated.last_subscription_event_tstamp as last_subscription_event_tstamp,
-  subscription_events_aggregated.revenue as revenue,
+  f.subscription_id,
+  f.user_identifier,
+  f.user_id,
+  f.stitched_user_id,
+  f.cv_tstamp as subscription_start_tstamp,
+  agg.last_subscription_event_tstamp as last_subscription_event_tstamp,
+  agg.revenue as revenue
 
   {% for event in var('snowplow__subscription_events') %}
-  subscription_events_aggregated.{{ event }}_count,
+    ,agg.{{ event }}_count
   {% endfor %}
 
   {% for event in var('snowplow__subscription_events') %}
-  subscription_events_aggregated.{{ event }}_revenue,
+    ,agg.{{ event }}_revenue
   {% endfor %}
 
 from 
-  first_subscription_event
+  first_subscription_event as f
 left join 
-  subscription_events_aggregated
+  subscription_events_aggregated as agg
 on 
-  first_subscription_event.subscription_id = subscription_events_aggregated.subscription_id
+  f.subscription_id = agg.subscription_id

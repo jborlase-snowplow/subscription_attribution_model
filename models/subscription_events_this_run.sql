@@ -50,7 +50,7 @@
         
         ev.cv_tstamp,
         cv_type,
-        ev.cv_value,
+        ev.cv_value
 
     from 
         {{ var('snowplow__conversions_source' )}} as ev

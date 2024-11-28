@@ -87,10 +87,10 @@ with spend_with_unique_keys as (
     sum(c.position_based_attribution) as position_based_attribution,
     coalesce(min(c.cv_total_revenue),0) as cv_total_revenue,
 
-    sum(c.first_touch_attribution*cv_total_revenue) as first_touch_attribution_revenue,
-    sum(c.last_touch_attribution*cv_total_revenue) as last_touch_attribution_revenue,
-    sum(c.linear_attribution*cv_total_revenue) as linear_attribution_revenue,
-    sum(c.position_based_attribution*cv_total_revenue) as position_based_attribution_revenue,
+    sum(c.first_touch_attribution)*coalesce(min(c.cv_total_revenue),0) as first_touch_attribution_revenue,
+    sum(c.last_touch_attribution)*coalesce(min(c.cv_total_revenue),0) as last_touch_attribution_revenue,
+    sum(c.linear_attribution*cv_total_revenue)*coalesce(min(c.cv_total_revenue),0) as linear_attribution_revenue,
+    sum(c.position_based_attribution)*coalesce(min(c.cv_total_revenue),0) as position_based_attribution_revenue,
 
     {% for event in var('snowplow__subscription_events') %}
      sum({{event}}_count) * sum(c.first_touch_attribution) as {{ event }}_first_touch_attribution,
@@ -144,10 +144,10 @@ with spend_with_unique_keys as (
     sum(c.position_based_attribution) as position_based_attribution,
     coalesce(min(c.cv_total_revenue),0) as cv_total_revenue,
 
-    sum(c.first_touch_attribution*cv_total_revenue) as first_touch_attribution_revenue,
-    sum(c.last_touch_attribution*cv_total_revenue) as last_touch_attribution_revenue,
-    sum(c.linear_attribution*cv_total_revenue) as linear_attribution_revenue,
-    sum(c.position_based_attribution*cv_total_revenue) as position_based_attribution_revenue,
+    sum(c.first_touch_attribution)*coalesce(min(c.cv_total_revenue),0) as first_touch_attribution_revenue,
+    sum(c.last_touch_attribution)*coalesce(min(c.cv_total_revenue),0) as last_touch_attribution_revenue,
+    sum(c.linear_attribution*cv_total_revenue)*coalesce(min(c.cv_total_revenue),0) as linear_attribution_revenue,
+    sum(c.position_based_attribution)*coalesce(min(c.cv_total_revenue),0) as position_based_attribution_revenue,
 
     {% for event in var('snowplow__subscription_events') %}
      sum({{event}}_count) * sum(c.first_touch_attribution) as {{ event }}_first_touch_attribution,
@@ -203,14 +203,14 @@ with spend_with_unique_keys as (
       max(cv_tstamp) as max_cv_tstamp,
       min(spend) as spend,
       sum(cv_total_revenue) as sum_cv_total_revenue,
-      sum({{ attribution }}_attribution_revenue) as attributed_revenue,
+      sum({{ attribution }}_attribution_revenue) as attributed_revenue
 
       {% for event in var('snowplow__subscription_events') %}
-        sum({{ event }}_{{ attribution }}_attribution) as {{ event }}_attributed_conversions,
+        ,sum({{ event }}_{{ attribution }}_attribution) as {{ event }}_attributed_conversions
       {% endfor %}
 
       {% for event in var('snowplow__subscription_events') %}
-        sum({{ event }}_{{ attribution }}_attribution_revenue) as {{ event }}_attributed_revenue,
+        ,sum({{ event }}_{{ attribution }}_attribution_revenue) as {{ event }}_attributed_revenue
       {% endfor %}
       
     from channel_prep
@@ -231,14 +231,14 @@ with spend_with_unique_keys as (
       max(cv_tstamp) as max_cv_tstamp,
       min(spend) as spend,
       sum(cv_total_revenue) as sum_cv_total_revenue,
-      sum({{ attribution }}_attribution_revenue) as attributed_revenue,
+      sum({{ attribution }}_attribution_revenue) as attributed_revenue
 
       {% for event in var('snowplow__subscription_events') %}
-        sum({{ event }}_{{ attribution }}_attribution) as {{ event }}_attributed_conversions,
+        ,sum({{ event }}_{{ attribution }}_attribution) as {{ event }}_attributed_conversions
       {% endfor %}
 
       {% for event in var('snowplow__subscription_events') %}
-        sum({{ event }}_{{ attribution }}_attribution_revenue) as {{ event }}_attributed_revenue,
+        ,sum({{ event }}_{{ attribution }}_attribution_revenue) as {{ event }}_attributed_revenue
       {% endfor %}
       
     from campaign_prep
