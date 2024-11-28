@@ -23,6 +23,7 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 models:
+  # Rename this to be the name of your dbt project name. Add the fields below it
   subscription_attribution_model:
     subscriptions:
       schema: 'derived'
@@ -32,6 +33,8 @@ models:
       +schema: 'derived'
     snowplow_subscription_attribution_manifest:
       schema: 'snowplow_manifest'
+      
+  # Add the following to the models section in your dbt_project.yml file
   snowplow_attribution:
     optional_reporting:
       +enabled: false
@@ -41,8 +44,9 @@ models:
       enabled: false
 
 
+# Add the following to your dbt_project.yml file
 on-run-end:
-  - "{{ snowplow_utils.snowplow_incremental_post_hook(package_name='snowplow_attribution', incremental_manifest_table_name='snowplow_subscription_attribution_manifest', base_events_this_run_table_name='subscription_events_this_run', session_timestamp=var('conversion_tstamp')) }}"
+  - "{{ snowplow_utils.snowplow_incremental_post_hook(package_name='snowplow_attribution', incremental_manifest_table_name='snowplow_subscription_attribution_manifest', base_events_this_run_table_name='subscription_events_this_run', session_timestamp=var('snowplow__conversion_tstamp')) }}"
 
 vars: 
   snowplow_unified:
@@ -77,7 +81,6 @@ vars:
 
   # Place these in your dbt_project.yml file directly under the vars key so that they can be referenced in all models.
   snowplow__attribution_start_date: '2024-11-15' # To be changed depending on the start date of the data
-  conversion_tstamp: 'cv_tstamp'
   snowplow__user_mapping_source: "{{ ref('snowplow_unified_user_mapping') }}" # Default if running Unified in the same project
   snowplow__conversion_path_source: "{{ ref('snowplow_unified_views') }}" # Default if running Unified in the same project
   snowplow__conversions_source: "{{ ref('snowplow_unified_conversions') }}" # Default if running Unified in the same project
@@ -87,5 +90,6 @@ vars:
   snowplow__allow_refresh: true # Default
   snowplow__dev_target_name: 'dev' # Default
   snowplow__lookback_window_hours: 6 # Default
+  snowplow__conversion_tstamp: 'cv_tstamp' # Default
   snowplow__subscription_events: ['free_trial', 'subscribe', 'renew'] # Set these to have the same name as the snowplow__conversion_events
  
