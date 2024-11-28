@@ -32,7 +32,13 @@
 
         and ev.cv_type in ({{ snowplow_utils.print_list(var('snowplow__subscription_events')) }})
 
-        and cv_tstamp >= {{ snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) }}
+        
+
+        {% if target.type in ['databricks', 'spark'] -%} 
+            cv_tstamp_date >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }})
+        {% else %} 
+            and cv_tstamp >= {{ snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) }}
+        {% endif %}
  ), 
  subscription_events AS (
     select
