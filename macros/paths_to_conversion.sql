@@ -117,7 +117,9 @@
     where 
 
       exists (select 1 from {{ref('subscription_events_this_run')}} c where c.subscription_id = ev.subscription_id)
-      and not exists (select 1 from {{ this }} p where p.cv_id = ev.subscription_id)
+      {% if is_incremental() %}
+        and not exists (select 1 from {{ this }} p where p.cv_id = ev.subscription_id)
+      {% endif %}
 
   )
   , string_aggs as (
