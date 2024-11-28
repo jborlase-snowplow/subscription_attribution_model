@@ -52,7 +52,7 @@
         
         ev.cv_tstamp,
         cv_type,
-        ev.cv_value,
+        ev.cv_value, -- was not even aware BQ allowes this, less portable this way but if it works it works :)
 
     from 
         {{ var('snowplow__conversions_source' )}} as ev

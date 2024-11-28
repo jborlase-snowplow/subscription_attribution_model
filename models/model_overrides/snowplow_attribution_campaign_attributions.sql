@@ -49,7 +49,7 @@ with arrays as (
   {% if is_incremental() %}
     {% if target.type in ['databricks', 'spark'] -%}
       where 
-        (cv_tstamp_date >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }})
+        (cv_tstamp_date >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }}) -- this sounds like over time it might not become so performant, if that degrades maybe it is best to replace this and do the correction as a post-hook update operation or something, even precalculating the lowest of the cv_tstamp to add as a filter if this table gets big
           OR EXISTS (SELECT 1 FROM {{ ref('subscription_events_this_run') }} i WHERE i.subscription_id = c.cv_id))
     {% else %}
       where 

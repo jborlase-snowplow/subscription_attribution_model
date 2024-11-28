@@ -87,8 +87,8 @@ with spend_with_unique_keys as (
     sum(c.position_based_attribution) as position_based_attribution,
     coalesce(min(c.cv_total_revenue),0) as cv_total_revenue,
 
-    sum(c.first_touch_attribution*cv_total_revenue) as first_touch_attribution_revenue,
-    sum(c.last_touch_attribution*cv_total_revenue) as last_touch_attribution_revenue,
+    sum(c.first_touch_attribution*cv_total_revenue) as first_touch_attribution_revenue, -- not too sure I follow how the calculation is meant to be, in case a conversion has multiple path elements we multiply each element with the total conversion value here, the total values in the output tables also don't add up (related to this probably?), the total cv_value in the conversions table is 149 yet the values are much higher in the overview 
+    sum(c.last_touch_attribution*cv_total_revenue) as last_touch_attribution_revenue, -- most likely you would need to take the join in a separate cte and correct it once it is already aggregated or something similar
     sum(c.linear_attribution*cv_total_revenue) as linear_attribution_revenue,
     sum(c.position_based_attribution*cv_total_revenue) as position_based_attribution_revenue,
 
@@ -101,7 +101,7 @@ with spend_with_unique_keys as (
      sum({{event}}_revenue) * sum(c.first_touch_attribution) as {{ event }}_first_touch_attribution_revenue,
      sum({{event}}_revenue) * sum(c.last_touch_attribution) as {{ event }}_last_touch_attribution_revenue,
      sum({{event}}_revenue) * sum(c.linear_attribution) as {{ event }}_linear_attribution_revenue,
-     sum({{event}}_revenue) * sum(c.position_based_attribution) as {{ event }}_position_based_attribution_revenue,
+     sum({{event}}_revenue) * sum(c.position_based_attribution) as {{ event }}_position_based_attribution_revenue, --free trial attributed revenue does not currently have a test case (in the output, most likely fine just noticed), also it would be great to add a non subscription related test case too just to see if the totals add up for that logic too (not sure how much we deviated on that front, you understand it better so might not be needed)
     {% endfor %}    
     
     {% if var('snowplow__spend_source') != 'not defined' %}
@@ -113,7 +113,7 @@ with spend_with_unique_keys as (
   from {{ ref('snowplow_attribution_campaign_attributions') }} c
   
   {% if var('snowplow__spend_source') != 'not defined' %}
-    left join campaign_spend_grouped s
+    left join campaign_spend_grouped s --be careful about giving the same alias, it has the potential to break things later on
     on s.campaign = c.campaign
   {% endif %}
 

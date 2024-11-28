@@ -80,3 +80,5 @@ vars:
 
   snowplow__subscription_events: ['free_trial', 'subscribe', 'renew']
  
+ # maybe worth considering adding a selectors.yml or specific tested dbt run prompts so that they can run unified related models separately from attrib related custom model for test or other purposes
+ 

@@ -78,4 +78,4 @@ from
 left join 
   subscription_events_aggregated
 on 
-  first_subscription_event.subscription_id = subscription_events_aggregated.subscription_id
+  first_subscription_event.subscription_id = subscription_events_aggregated.subscription_id --very much NIT but f, and agg would make this a bit more readable
