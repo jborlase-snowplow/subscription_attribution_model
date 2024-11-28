@@ -10,7 +10,7 @@
       "field": "cv_tstamp",
       "data_type": "timestamp"
     }, databricks_val='cv_tstamp_date'),
-    tags=["derived"],
+    tags=["derived","snowplow_attribution_incremental"],
     sql_header=snowplow_utils.set_query_tag(var('snowplow__query_tag', 'snowplow_dbt')),
     tblproperties={
       'delta.autoOptimize.optimizeWrite' : 'true',
@@ -19,8 +19,8 @@
     snowplow_optimize = true
   )
 }}
-{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(this,'cv_tstamp','cv_tstamp',true) %}
- -- cluster_by=snowplow_unified.get_cluster_by_values('conversions'),
+{%- set __, last_processed_cv_tstamp = snowplow_utils.return_limits_from_model(ref('snowplow_subscription_attribution_manifest'),'last_success','last_success',true) %}
+
 
  with this_run_subscriptions as (
     select
@@ -31,11 +31,9 @@
         {{ var('snowplow__conversion_clause') }} 
 
         and ev.cv_type in ({{ snowplow_utils.print_list(var('snowplow__subscription_events')) }})
-
         
-
         {% if target.type in ['databricks', 'spark'] -%} 
-            cv_tstamp_date >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }})
+            cv_tstamp_date >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__lookback_window_hours", 30), last_processed_cv_tstamp) }})
         {% else %} 
             and cv_tstamp >= {{ snowplow_utils.timestamp_add('hour', -var("snowplow__lookback_window_hours", 6), last_processed_cv_tstamp) }}
         {% endif %}

@@ -20,7 +20,6 @@
     snowplow_optimize = true
   )
 }}
- -- cluster_by=snowplow_unified.get_cluster_by_values('conversions'),
 
 with first_subscription_event AS (
   select
@@ -32,7 +31,8 @@ with first_subscription_event AS (
     ev.cv_type,
     ev.cv_value
   from {{ ref('subscription_events_this_run' )}} as ev
-  
+  where
+    
   qualify row_number() over (partition by ev.subscription_id order by ev.cv_tstamp) = 1
 ),
  subscription_events_aggregated AS (

@@ -76,7 +76,7 @@
     
     {{ var('snowplow__conversion_clause') }} 
 
-    and NOT ev.cv_type in ({{ snowplow_utils.print_list(var('snowplow__subscription_events')) }})
+    and NOT ev.cv_type in ({{ snowplow_utils.print_list(var('snowplow__subscription_events')) }}) -- SUBSCRIPTION_ATTRIBUTION UPDATES: exclude subscription events from conversions
 
     {% if is_incremental() %}
       {% if target.type in ['databricks', 'spark'] -%}
@@ -88,6 +88,7 @@
 
   ),
 
+  -- SUBSCRIPTION_ATTRIBUTION UPDATES: This CTE is used to identify new subscriptions that have not had a path to conversion calculated yet
   new_subscriptions as (
     
     select
@@ -114,11 +115,10 @@
     {% endif %}
 
     where 
+
       exists (select 1 from {{ref('subscription_events_this_run')}} c where c.subscription_id = ev.subscription_id)
-      -- exclude if cv_id is already in the paths_to_conversion table
-      {% if is_incremental() %}
-        and not exists (select 1 from {{ this }} p where p.cv_id = ev.subscription_id)
-      {% endif %}
+      and not exists (select 1 from {{ this }} p where p.cv_id = ev.subscription_id)
+
   )
   , string_aggs as (
     
@@ -205,7 +205,7 @@
 
   from path_transforms t
 
-  -- update revenue for subscriptions with new events that already have paths to conversion
+  -- SUBSCRIPTION_ATTRIBUTION UPDATES: This if statement updates revenue for subscriptions that have a path to conversion calculated
   {% if is_incremental() %}
     union all 
     select  
@@ -230,8 +230,8 @@
     on 
       s.cv_id = sub.subscription_id
     where
-      exists (select 1 from {{ ref('subscription_events_this_run') }} c where c.subscription_id = s.cv_id) -- include if subscription_id is being processed in subscription_events_this_run
-      and not exists (select 1 from new_subscriptions p where p.cv_id = s.cv_id) -- exclude if subscription_id is processed in new_subscriptions
+      not exists (select 1 from new_subscriptions p where p.cv_id = s.cv_id) 
+      and exists (select 1 from {{ ref('subscription_events_this_run') }} c where c.subscription_id = s.cv_id)
   {% endif %}
 
 

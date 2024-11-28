@@ -47,11 +47,13 @@ with arrays as (
   
   {% if is_incremental() %}
     {% if target.type in ['databricks', 'spark'] -%}
-      where (cv_tstamp_date >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }})
-            OR EXISTS (SELECT 1 FROM {{ ref('subscription_events_this_run') }} i WHERE i.subscription_id = c.cv_id))
+      where (cv_tstamp_date >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }}))
+            -- SUBSCRIPTION_ATTRIBUTION UPDATES: Includes additional lookback window for subscriptions
+            OR EXISTS (SELECT 1 FROM {{ ref('subscription_events_this_run') }} i WHERE i.subscription_id = c.cv_id and i.cv_tstamp >= {{last_processed_cv_tstamp}})
     {% else %}
-      where (cv_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }}
-            OR EXISTS (SELECT 1 FROM {{ ref('subscription_events_this_run') }} i WHERE i.subscription_id = c.cv_id))
+      where (cv_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }})
+            -- SUBSCRIPTION_ATTRIBUTION UPDATES: Includes additional lookback window for subscriptions
+            OR EXISTS (SELECT 1 FROM {{ ref('subscription_events_this_run') }} i WHERE i.subscription_id = c.cv_id and i.cv_tstamp >= {{last_processed_cv_tstamp}})
             
     {% endif %}
   {% endif %}
@@ -76,6 +78,8 @@ with arrays as (
     u.source_index,
     {{ snowplow_utils.get_array_size('channel_path_array') }} as path_length,
     case when u.source_index = max(u.source_index) over (partition by u.cv_id) then true else false end as is_last_element,
+
+    -- SUBSCRIPTION_ATTRIBUTION UPDATES: Remove revenue
     case when {{ snowplow_utils.get_array_size('channel_path_array') }} = 1 then 1
         when {{ snowplow_utils.get_array_size('channel_path_array') }} = 2 then 1.0/2
         else null end as position_based_attribution
@@ -101,6 +105,8 @@ select
   channel,
   source_index,
   path_length,
+
+  -- SUBSCRIPTION_ATTRIBUTION UPDATES: Remove revenue
   case when source_index = 0 then 1 else 0 end as first_touch_attribution,
   case when is_last_element then 1 else 0 end as last_touch_attribution,
   1.0 / nullif(path_length, 0.0) as linear_attribution,

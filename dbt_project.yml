@@ -30,6 +30,8 @@ models:
       schema: 'scratch'
     model_overrides:
       +schema: 'derived'
+    snowplow_subscription_attribution_manifest:
+      schema: 'snowplow_manifest'
   snowplow_attribution:
     optional_reporting:
       +enabled: false
@@ -39,7 +41,10 @@ models:
       enabled: false
 
 
-vars:
+on-run-end:
+  - "{{ snowplow_utils.snowplow_incremental_post_hook(package_name='snowplow_attribution', incremental_manifest_table_name='snowplow_subscription_attribution_manifest', base_events_this_run_table_name='subscription_events_this_run', session_timestamp=var('conversion_tstamp')) }}"
+
+vars: 
   snowplow_unified:
     snowplow__atomic_schema: 'dbt_jborlase_test'
     snowplow__events_table: 'events'
@@ -65,18 +70,22 @@ vars:
         "name": "renew",
         "value": "unstruct_event_com_snplow_eng_aws_subscription_event_test_1.price"
       }]
+
+    # Ensure that the conversion_passthroughs sets an alias named 'subscription_id'
     snowplow__conversion_passthroughs: [{'sql':'unstruct_event_com_snplow_eng_aws_subscription_event_test_1.subscription_id','alias':'subscription_id'}]
 
-  snowplow__attribution_start_date: '2024-11-15'
-  snowplow__user_mapping_source: "{{ ref('snowplow_unified_user_mapping') }}"
-  snowplow__conversion_path_source: "{{ ref('snowplow_unified_views') }}"
-  snowplow__conversions_source: "{{ ref('snowplow_unified_conversions') }}"
-  snowplow__enable_paths_to_non_conversion: false
-  snowplow__conversion_clause: 'ev.user_identifier is not null'
-  snowplow__path_lookback_days: 30
-  snowplow__allow_refresh: true
-  snowplow__dev_target_name: 'dev'
-  snowplow__lookback_window_hours: 6
 
-  snowplow__subscription_events: ['free_trial', 'subscribe', 'renew']
+  # Place these in your dbt_project.yml file directly under the vars key so that they can be referenced in all models.
+  snowplow__attribution_start_date: '2024-11-15' # To be changed depending on the start date of the data
+  conversion_tstamp: 'cv_tstamp'
+  snowplow__user_mapping_source: "{{ ref('snowplow_unified_user_mapping') }}" # Default if running Unified in the same project
+  snowplow__conversion_path_source: "{{ ref('snowplow_unified_views') }}" # Default if running Unified in the same project
+  snowplow__conversions_source: "{{ ref('snowplow_unified_conversions') }}" # Default if running Unified in the same project
+  snowplow__enable_paths_to_non_conversion: false # Default
+  snowplow__conversion_clause: 'ev.user_identifier is not null' # Default
+  snowplow__path_lookback_days: 30 # Default
+  snowplow__allow_refresh: true # Default
+  snowplow__dev_target_name: 'dev' # Default
+  snowplow__lookback_window_hours: 6 # Default
+  snowplow__subscription_events: ['free_trial', 'subscribe', 'renew'] # Set these to have the same name as the snowplow__conversion_events
  
