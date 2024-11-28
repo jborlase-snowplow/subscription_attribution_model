@@ -25,6 +25,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   # Rename this to be the name of your dbt project name. Add the fields below it
   subscription_attribution_model:
+    +tags: ['snowplow_subscription_attribution']
     subscriptions:
       schema: 'derived'
     subscription_events_this_run:
