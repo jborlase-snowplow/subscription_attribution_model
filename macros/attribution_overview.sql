@@ -262,14 +262,14 @@ select
   max_cv_tstamp,
   spend,
   sum_cv_total_revenue,
-  attributed_revenue,
+  attributed_revenue
 
   {% for event in var('snowplow__subscription_events') %}
-      {{ event }}_attributed_conversions,
+      ,{{ event }}_attributed_conversions
     {% endfor %}
 
     {% for event in var('snowplow__subscription_events') %}
-      {{ event }}_attributed_revenue,
+      ,{{ event }}_attributed_revenue
     {% endfor %}
 
   {% if var('snowplow__spend_source') != 'not defined' %}
