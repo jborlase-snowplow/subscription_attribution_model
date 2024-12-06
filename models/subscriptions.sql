@@ -1,7 +1,7 @@
 {{
   config(
     materialized='incremental',
-    incremental_strategy='merge',
+    incremental_strategy='insert_overwrite',
     on_schema_change='append_new_columns',
     unique_key='subscription_id',
     upsert_date_key='last_subscription_event_tstamp',
@@ -30,8 +30,15 @@ with first_subscription_event AS (
     ev.cv_tstamp,
     ev.cv_type,
     ev.cv_value
+
+    {% if target.type in ['postgres','spark'] %}
+          , row_number() over (partition by ev.subscription_id order by ev.cv_tstamp) as session_dedupe_index
+    {% endif %}
+
   from {{ ref('subscription_events_this_run' )}} as ev
-  qualify row_number() over (partition by ev.subscription_id order by ev.cv_tstamp) = 1
+  {% if target.type not in ['postgres','spark'] %}
+    qualify row_number() over (partition by ev.subscription_id order by ev.cv_tstamp) = 1
+  {% endif %}
 ),
  subscription_events_aggregated AS (
 select
@@ -77,3 +84,6 @@ left join
   subscription_events_aggregated as agg
 on 
   f.subscription_id = agg.subscription_id
+{% if target.type in ['postgres','spark'] %}
+  where f.session_dedupe_index = 1
+{%- endif %}
