@@ -93,15 +93,15 @@ with spend_with_unique_keys as (
     sum(c.position_based_attribution)*coalesce(min(c.cv_total_revenue),0) as position_based_attribution_revenue,
 
     {% for event in var('snowplow__subscription_events') %}
-     sum({{event}}_count) * sum(c.first_touch_attribution) as {{ event }}_first_touch_attribution,
-     sum({{event}}_count) * sum(c.last_touch_attribution) as {{ event }}_last_touch_attribution,
-     sum({{event}}_count) * sum(c.linear_attribution) as {{ event }}_linear_attribution,
-     sum({{event}}_count) * sum(c.position_based_attribution) as {{ event }}_position_based_attribution,
+     sum({{event}}_count * c.first_touch_attribution) as {{ event }}_first_touch_attribution,
+     sum({{event}}_count * c.last_touch_attribution) as {{ event }}_last_touch_attribution,
+     sum({{event}}_count * c.linear_attribution) as {{ event }}_linear_attribution,
+     sum({{event}}_count * c.position_based_attribution) as {{ event }}_position_based_attribution,
 
-     sum({{event}}_revenue) * sum(c.first_touch_attribution) as {{ event }}_first_touch_attribution_revenue,
-     sum({{event}}_revenue) * sum(c.last_touch_attribution) as {{ event }}_last_touch_attribution_revenue,
-     sum({{event}}_revenue) * sum(c.linear_attribution) as {{ event }}_linear_attribution_revenue,
-     sum({{event}}_revenue) * sum(c.position_based_attribution) as {{ event }}_position_based_attribution_revenue,
+     sum({{event}}_revenue * c.first_touch_attribution) as {{ event }}_first_touch_attribution_revenue,
+     sum({{event}}_revenue * c.last_touch_attribution) as {{ event }}_last_touch_attribution_revenue,
+     sum({{event}}_revenue * c.linear_attribution) as {{ event }}_linear_attribution_revenue,
+     sum({{event}}_revenue * c.position_based_attribution) as {{ event }}_position_based_attribution_revenue,
     {% endfor %}    
     
     {% if var('snowplow__spend_source') != 'not defined' %}
@@ -150,15 +150,15 @@ with spend_with_unique_keys as (
     sum(c.position_based_attribution)*coalesce(min(c.cv_total_revenue),0) as position_based_attribution_revenue,
 
     {% for event in var('snowplow__subscription_events') %}
-     sum({{event}}_count) * sum(c.first_touch_attribution) as {{ event }}_first_touch_attribution,
-     sum({{event}}_count) * sum(c.last_touch_attribution) as {{ event }}_last_touch_attribution,
-     sum({{event}}_count) * sum(c.linear_attribution) as {{ event }}_linear_attribution,
-     sum({{event}}_count) * sum(c.position_based_attribution) as {{ event }}_position_based_attribution,
+     sum({{event}}_count * c.first_touch_attribution) as {{ event }}_first_touch_attribution,
+     sum({{event}}_count * c.last_touch_attribution) as {{ event }}_last_touch_attribution,
+     sum({{event}}_count * c.linear_attribution) as {{ event }}_linear_attribution,
+     sum({{event}}_count * c.position_based_attribution) as {{ event }}_position_based_attribution,
 
-     sum({{event}}_revenue) * sum(c.first_touch_attribution) as {{ event }}_first_touch_attribution_revenue,
-     sum({{event}}_revenue) * sum(c.last_touch_attribution) as {{ event }}_last_touch_attribution_revenue,
-     sum({{event}}_revenue) * sum(c.linear_attribution) as {{ event }}_linear_attribution_revenue,
-     sum({{event}}_revenue) * sum(c.position_based_attribution) as {{ event }}_position_based_attribution_revenue,
+     sum({{event}}_revenue * c.first_touch_attribution) as {{ event }}_first_touch_attribution_revenue,
+     sum({{event}}_revenue * c.last_touch_attribution) as {{ event }}_last_touch_attribution_revenue,
+     sum({{event}}_revenue * c.linear_attribution) as {{ event }}_linear_attribution_revenue,
+     sum({{event}}_revenue * c.position_based_attribution) as {{ event }}_position_based_attribution_revenue,
     {% endfor %}    
   
   {% if var('snowplow__spend_source') != 'not defined' %}
