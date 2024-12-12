@@ -89,7 +89,7 @@ with spend_with_unique_keys as (
 
     sum(c.first_touch_attribution)*coalesce(min(c.cv_total_revenue),0) as first_touch_attribution_revenue,
     sum(c.last_touch_attribution)*coalesce(min(c.cv_total_revenue),0) as last_touch_attribution_revenue,
-    sum(c.linear_attribution*cv_total_revenue)*coalesce(min(c.cv_total_revenue),0) as linear_attribution_revenue,
+    sum(c.linear_attribution)*coalesce(min(c.cv_total_revenue),0) as linear_attribution_revenue,
     sum(c.position_based_attribution)*coalesce(min(c.cv_total_revenue),0) as position_based_attribution_revenue,
 
     {% for event in var('snowplow__subscription_events') %}
@@ -146,7 +146,7 @@ with spend_with_unique_keys as (
 
     sum(c.first_touch_attribution)*coalesce(min(c.cv_total_revenue),0) as first_touch_attribution_revenue,
     sum(c.last_touch_attribution)*coalesce(min(c.cv_total_revenue),0) as last_touch_attribution_revenue,
-    sum(c.linear_attribution*cv_total_revenue)*coalesce(min(c.cv_total_revenue),0) as linear_attribution_revenue,
+    sum(c.linear_attribution)*coalesce(min(c.cv_total_revenue),0) as linear_attribution_revenue,
     sum(c.position_based_attribution)*coalesce(min(c.cv_total_revenue),0) as position_based_attribution_revenue,
 
     {% for event in var('snowplow__subscription_events') %}
