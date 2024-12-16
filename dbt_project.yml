@@ -23,6 +23,8 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 models:
+  +file_format: "{{ 'delta' if target.type not in ['spark'] else 'iceberg'}}"
+  +incremental_strategy: "{{ none if target.type not in ['spark'] else 'merge' }}"
   # Rename this to be the name of your dbt project name. Add the fields below it
   subscription_attribution_model:
     +tags: ['snowplow_subscription_attribution']

@@ -8,6 +8,7 @@ You may obtain a copy of the Snowplow Personal and Academic License Version 1.0 
 {{
   config(
     materialized='incremental',
+    incremental_strategy='merge',
     full_refresh=snowplow_attribution.allow_refresh(),
     on_schema_change='append_new_columns',
     unique_key='composite_key',

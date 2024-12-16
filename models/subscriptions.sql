@@ -1,7 +1,7 @@
 {{
   config(
     materialized='incremental',
-    incremental_strategy='insert_overwrite',
+    incremental_strategy='merge',
     on_schema_change='append_new_columns',
     unique_key='subscription_id',
     upsert_date_key='last_subscription_event_tstamp',
