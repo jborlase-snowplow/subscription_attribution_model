@@ -78,7 +78,7 @@ vars:
         "value": "unstruct_event_com_snplow_eng_aws_subscription_event_test_1.price"
       }]
 
-    # Ensure that the conversion_passthroughs sets an alias named 'subscription_id'
+    # Ensure that the conversion_passthroughs sets an alias named 'subscription_id' or matches the snowplow__subscription_id variable below
     snowplow__conversion_passthroughs: [{'sql':'unstruct_event_com_snplow_eng_aws_subscription_event_test_1.subscription_id','alias':'subscription_id'}]
 
 
@@ -93,6 +93,9 @@ vars:
   snowplow__allow_refresh: true # Default
   snowplow__dev_target_name: 'dev' # Default
   snowplow__lookback_window_hours: 6 # Default
-  snowplow__conversion_tstamp: 'cv_tstamp' # Default
+  
+
+  # Subscription Attribution Model Specific Variables
+  snowplow__subscription_id: 'subscription_id' # Set this to the name of the subscription_id column
   snowplow__subscription_events: ['free_trial', 'subscribe', 'renew'] # Set these to have the same name as the snowplow__conversion_events
- 
+  snowplow__conversion_tstamp: 'cv_tstamp' # Leave this as is

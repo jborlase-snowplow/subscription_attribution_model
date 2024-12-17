@@ -118,7 +118,7 @@ with spend_with_unique_keys as (
   {% endif %}
 
   left join {{ ref('subscriptions') }} s
-    on c.cv_id = s.subscription_id
+    on c.cv_id = s.{{var('snowplow__subscription_id')}}
   
   where
   {% if not var('snowplow__conversion_window_start_date') == '' and not var('snowplow__conversion_window_end_date') == '' %}
@@ -150,8 +150,6 @@ with spend_with_unique_keys as (
     sum(c.position_based_attribution)*coalesce(min(c.cv_total_revenue),0) as position_based_attribution_revenue,
 
     {% for event in var('snowplow__subscription_events') %}
-
-    sum({{event}}_count) * sum(c.first_touch_attribution) as {{ event }}_first_touch_attribution,
      sum({{event}}_count * c.first_touch_attribution) as {{ event }}_first_touch_attribution,
      sum({{event}}_count * c.last_touch_attribution) as {{ event }}_last_touch_attribution,
      sum({{event}}_count * c.linear_attribution) as {{ event }}_linear_attribution,
@@ -177,7 +175,7 @@ with spend_with_unique_keys as (
   {% endif %}
 
   left join {{ ref('subscriptions') }} s
-    on c.cv_id = s.subscription_id
+    on c.cv_id = s.{{var('snowplow__subscription_id')}}
   
   where 
   

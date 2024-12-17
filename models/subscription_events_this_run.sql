@@ -24,7 +24,7 @@
 
  with this_run_subscriptions as (
     select
-        distinct subscription_id
+        distinct {{var('snowplow__subscription_id')}}
     from 
         {{ var('snowplow__conversions_source' )}} as ev
     where 
@@ -42,7 +42,7 @@
     select
         ev.cv_id,
         ev.event_id,
-        ev.subscription_id,
+        ev.{{var('snowplow__subscription_id')}},
 
         ev.user_identifier, 
         ev.user_id,
@@ -62,7 +62,7 @@
         and EXISTS (
                 SELECT 1 
                 FROM this_run_subscriptions t 
-                WHERE t.subscription_id = ev.subscription_id
+                WHERE t.{{var('snowplow__subscription_id')}} = ev.{{var('snowplow__subscription_id')}}
             )
  )
 

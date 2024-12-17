@@ -50,11 +50,11 @@ with arrays as (
     {% if target.type in ['databricks', 'spark'] -%}
       where (cv_tstamp_date >= date({{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }}))
             -- SUBSCRIPTION_ATTRIBUTION UPDATES: Includes additional lookback window for subscriptions
-            OR EXISTS (SELECT 1 FROM {{ ref('subscription_events_this_run') }} i WHERE i.subscription_id = c.cv_id)
+            OR EXISTS (SELECT 1 FROM {{ ref('subscription_events_this_run') }} i WHERE i.{{var('snowplow__subscription_id')}} = c.cv_id)
     {% else %}
       where (cv_tstamp >= {{ snowplow_utils.timestamp_add('day', -var("snowplow__path_lookback_days", 30), last_processed_cv_tstamp) }})
             -- SUBSCRIPTION_ATTRIBUTION UPDATES: Includes additional lookback window for subscriptions
-            OR EXISTS (SELECT 1 FROM {{ ref('subscription_events_this_run') }} i WHERE i.subscription_id = c.cv_id)
+            OR EXISTS (SELECT 1 FROM {{ ref('subscription_events_this_run') }} i WHERE i.{{var('snowplow__subscription_id')}} = c.cv_id)
             
     {% endif %}
   {% endif %}

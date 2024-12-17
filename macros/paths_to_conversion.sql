@@ -92,7 +92,7 @@
   new_subscriptions as (
     
     select
-      ev.subscription_id as cv_id,
+      ev.{{var('snowplow__subscription_id')}} as cv_id,
       
       'null' as event_id,
 
@@ -116,9 +116,9 @@
 
     where 
 
-      exists (select 1 from {{ref('subscription_events_this_run')}} c where c.subscription_id = ev.subscription_id)
+      exists (select 1 from {{ref('subscription_events_this_run')}} c where c.{{var('snowplow__subscription_id')}} = ev.{{var('snowplow__subscription_id')}})
       {% if is_incremental() %}
-        and not exists (select 1 from {{ this }} p where p.cv_id = ev.subscription_id)
+        and not exists (select 1 from {{ this }} p where p.cv_id = ev.{{var('snowplow__subscription_id')}})
       {% endif %}
 
   )
@@ -230,10 +230,10 @@
     left join
       {{ ref('subscriptions') }} sub
     on 
-      s.cv_id = sub.subscription_id
+      s.cv_id = sub.{{var('snowplow__subscription_id')}}
     where
       not exists (select 1 from new_subscriptions p where p.cv_id = s.cv_id) 
-      and exists (select 1 from {{ ref('subscription_events_this_run') }} c where c.subscription_id = s.cv_id)
+      and exists (select 1 from {{ ref('subscription_events_this_run') }} c where c.{{var('snowplow__subscription_id')}} = s.cv_id)
   {% endif %}
 
 
